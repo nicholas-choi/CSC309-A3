@@ -1,0 +1,20 @@
+xxxxxxxxxxxxxxxxxxxx
+x  b  d   bb  bbbd x
+xbbb bbbbbb   bbbbbx
+xbbbbb b  b      b x
+x  b b     b b  bbbx
+x           b   b  x
+x bbb         bb  bx
+x b bb   b  b      x
+xbb   bb  b    bb dx
+x  b  b   b   b b bx
+x      bb bbb b    x
+x    b  p  b    b  x
+x       bbbbbb b d x
+x    bbbb b  r     x
+x  d b   bbbb b  b x
+x  bbbb  s  b  r   x
+x  ds   bbb b   r dx
+x bbbbbbbbbbbbbbbbbx
+x  s  r  s    r    x
+xxxxxxxxxxxxxxxxxxxx

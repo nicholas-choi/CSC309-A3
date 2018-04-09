@@ -1,0 +1,494 @@
+var minNumber = 0;
+var maxNumber = 1000;
+var socket;
+var usr_id = -1;
+window.onbeforeunload = sendCloseConn;
+function sendCloseConn() {
+    socket.send(JSON.stringify({'jsonType':'closeConn','id':usr_id}));
+}
+
+function gameover(){
+  console.log("reached gameover");
+	var img = document.createElement("img");
+	img.src = "http://moziru.com/images/deadth-clipart-transparent-14.png";
+	if(img && img.style) {
+			img.style.height = '800px';
+			img.style.width = '1000px';
+	}
+	$('#stage').html(img);
+}
+
+function winner(){
+
+	var img = document.createElement("img");
+	img.src = "http://i.imgur.com/rkxeQPC.gif";
+	if(img && img.style) {
+			img.style.height = '800px';
+			img.style.width = '1000px';
+	}
+	$('#stage').html(img);
+}
+
+
+function renderStage(stageArray){
+  var img = document.createElement("img");
+  var tableBody = $(document.createElement('tbody'));
+  var row = $(document.createElement('tr'));
+  //Create a prototype of the type of cell we want
+  //In each cell we shall display the text "Cell"
+  for (var i = 0; i < 20; i++)
+  {
+    var newRow = row.clone();
+    tableBody.append(newRow);
+    for (var j = 0; j < 20; j++){
+      //console.log(stage.getActor(j, i).getName());
+      var yLocation = i*20;
+      var xLocation = j;
+      var convertedLocation = yLocation + xLocation;
+      switch(stageArray[convertedLocation]){
+        case "p":
+          img.src = document.getElementById('player').src;
+          break;
+        case "d":
+          img.src = document.getElementById('monsterImage').src;
+          break;
+        case "w":
+          img.src = document.getElementById('wallImage').src;
+          break;
+        case "b":
+          img.src = document.getElementById('boxImage').src;
+          break;
+        case "s":
+          img.src = document.getElementById('slimeImage').src;
+          break;
+        case "2":
+          img.src = document.getElementById('player2').src;
+          break;
+        case "3":
+          img.src = document.getElementById('player3').src;
+          break;
+        case "4":
+          img.src = document.getElementById('player4').src;
+          break;
+        default:
+          img.src = document.getElementById('blankImage').src;
+          break;
+
+      }
+
+      if(img && img.style) {
+          img.style.height = '40px';
+          img.style.width = '40px';
+      }
+      var cell = $(document.createElement('td')).html(img);
+      newRow.append(cell.clone());
+    }
+  }
+  $('#stage').html(tableBody);
+}
+
+function lobby(){
+			$(function(){
+				socket = new WebSocket("ws://cslinux.utm.utoronto.ca:10311");
+				//socket = new WebSocket("ws://localhost:10311");
+				socket.onopen = function (event) {
+					$('#sendButton').removeAttr('disabled');
+					console.log("connected");
+				};
+
+				socket.onclose = function (event) {
+					//alert("closed code:" + event.code + " reason:" +event.reason + " wasClean:"+event.wasClean);
+					socket.send(JSON.stringify({'id':usr_id}));
+				};
+				socket.onmessage = function (event) {
+					var jsonThing=JSON.parse(event.data);
+
+					if (jsonThing.jsonType == 'gg') {
+						console.log(jsonThing);
+						console.log("score: " + jsonThing.score);
+						var score = jsonThing.score;
+						var gameState = jsonThing.gameState;
+						if (gameState == "win"){
+							winner();
+						} else if (gameState == "gameover"){
+							gameover();
+						}
+					}
+					if (jsonThing.jsonType == 'stage'){
+						var stageArray = jsonThing.stage;
+						renderStage(stageArray);
+					}
+					if (jsonThing.jsonType == 'init') {
+						//console.log("USER spawn: " + jsonThing.player_id);
+						usr_id = jsonThing.player_id;
+					}
+
+
+
+				}
+
+				document.addEventListener('keydown', function(event) {
+					var newCord;
+					switch(event.keyCode){
+						case 65:
+							newCord = "west";
+							break;
+						case 68:
+							newCord = "east";
+							break;
+						case 87:
+							newCord = "north";
+							break;
+						case 88:
+							newCord = "south";
+							break;
+						case 81:
+							newCord = "north_west";
+							break;
+						case 69:
+							newCord = "north_east";
+							break;
+						case 97:
+							newCord = "south_west";
+							break;
+						case 99:
+							newCord = "south_east";
+							break;
+						default:
+							return;
+					}
+					socket.send(JSON.stringify({'jsonType':'direction', 'direction': newCord, 'id':usr_id}));
+				});
+
+			});
+}
+
+class Register extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render(props) {
+    return (
+      <div>
+        <h3>Register</h3>
+        <form>
+          Username: <br/>
+          <input type="text" name="user" value={this.props.username} onChange={this.props.onUserChange}/> <br/>
+          Password: <br/>
+          <input type="password" name="pass" value={this.props.hashpass} onChange={this.props.onPassChange}/> <br/><br/>
+        </form>
+      </div>
+    );
+  }l
+}
+
+class Lobby extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render(props) {
+    return (
+      <div>
+       <div id="stage">
+	<h3>Hi</h3>
+	</div>
+      </div>
+    );
+  }
+}
+
+class Profile extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render(props) {
+    return (
+      <div>
+        <h3>Profile</h3>
+        <form>
+          Username: <br/>
+          <input type="text" name="user" value = {this.props.username} readOnly/> <br/>
+          Password: <br/>
+          <input type="password" name="pass" value = {this.props.hashpass} onChange={this.props.onPassChange}/> <br/>
+          Email: <br/>
+          <input type="text" name="pass" value = {this.props.email} onChange={this.props.onEmailChange}/> <br/>
+          Top Score: <br/>
+          <input type="text" name="pass" value = {this.props.score} readOnly/> <br/><br/>
+        </form>
+      </div>
+    );
+  }
+}
+
+class Login extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render(props) {
+    return (
+      <div>
+        <h3>Login</h3>
+        <form>
+          Username: <br/>
+          <input type="text" name="user" value={this.props.username} onChange={this.props.onUserChange}/> <br/>
+          Password: <br/>
+          <input type="password" name="pass" value={this.props.hashpass} onChange={this.props.onPassChange}/> <br/><br/>
+        </form>
+      </div>
+    );
+  }
+}
+
+class Main extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {view: 'login', username: '', hashpass: '', email: '', topscore: '', msg: ''};
+    this.loginClick = this.loginClick.bind(this);
+    this.toRegisterClick = this.toRegisterClick.bind(this);
+    this.registerClick = this.registerClick.bind(this);
+    this.toLoginClick = this.toLoginClick.bind(this);
+    this.profileClick = this.profileClick.bind(this);
+    this.onUserChange = this.onUserChange.bind(this);
+    this.onPassChange = this.onPassChange.bind(this);
+    this.onEmailChange = this.onEmailChange.bind(this);
+    this.registerUser = this.registerUser.bind(this);
+    this.toLobbyClick = this.toLobbyClick.bind(this);
+  }
+
+  onUserChange(e) {
+    this.setState({username: e.target.value });
+  }
+
+  onPassChange(e) {
+    this.setState({hashpass: e.target.value });
+  }
+
+  onEmailChange(e) {
+    this.setState({email: e.target.value });
+  }
+
+  loginClick() {
+    // Invalid Input: If Username Or Password field are empty.
+    if ((this.state.username == '') || (this.state.hashpass == '')) {
+      this.setState({msg: 'User or Pass Missing!'});
+    }
+    // Otherwise, we query to MongoDB.
+    else {
+      // Login Route.
+      $.ajax({
+          url: '/api/login/'+this.state.username,
+          method: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({ name: this.state.username, pass: this.state.hashpass})
+      }).done(function(response){
+          if (response['checklogin'][0] == 1) {
+            this.setState({view: 'profile', msg: ''});
+          }
+          else {
+            this.setState({msg: 'Incorrect Info!'});
+          }
+      }.bind(this));
+
+      // Populate Email Route.
+      $.ajax({
+          url: '/api/getemail/'+this.state.username,
+          method: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({ name: this.state.username })
+      }).done(function(response){
+          this.setState({email: response[0].email});
+      }.bind(this));
+
+      // Populate Top Score.
+      $.ajax({
+          url: '/api/getscore/'+this.state.username,
+          method: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({ name: this.state.username })
+      }).done(function(response){
+          // To calculate max score.
+          var max = 0;
+          var i = 0;
+          for (i; i < response.length; i++) {
+            if (response[i].score > max) {
+              max = response[i].score;
+            }
+          }
+          this.setState({topscore: max});
+      }.bind(this));
+    }
+  }
+
+  toRegisterClick() {
+    this.setState({view: 'register', 'username': '', 'hashpass': '', msg: ''});
+  }
+
+  registerClick() {
+    // Invalid Input: If Username Or Password field are empty.
+    if ((this.state.username == '') || (this.state.hashpass == '')) {
+      this.setState({msg: 'User or Pass Missing!'});
+    }
+    // Otherwise, we query to MongoDB.
+    else {
+      $.ajax({
+          url: '/api/checkuser/'+this.state.username,
+          method: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({ name: this.state.username })
+      }).done(function(response){
+          if (response['checkreg'][0] == 1) {
+            this.setState({msg: 'Username Taken!'});
+          }
+          else {
+            this.registerUser();
+          }
+      }.bind(this));
+    }
+  }
+
+  registerUser() {
+    $.ajax({
+        url: '/api/register/'+this.state.username,
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ name: this.state.username, pass: this.state.hashpass })
+    }).done(function(response){
+        this.setState({msg: 'Successfully Registered!'});
+        console.log(JSON.stringify(response));
+    }.bind(this));
+  }
+
+  toLoginClick() {
+    this.setState({view: 'login', 'username': '', 'hashpass': '', msg: ''});
+  }
+
+  profileClick() {
+    $.ajax({
+        url: '/api/update/'+this.state.username,
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ name: this.state.username, pass: this.state.hashpass, email: this.state.email })
+    }).done(function(response){
+        this.setState({msg: 'Successfully Updated!'});
+        console.log(JSON.stringify(response));
+    }.bind(this));
+  }
+
+  toLobbyClick() {
+    this.setState({view: 'lobby'});
+    lobby();
+  }
+
+  render(props) {
+    // To save our current view state.
+    var currentView;
+
+    // Our assortment of buttons.
+    var loginButton = null;
+    var toRegister = null;
+    var registerButton = null;
+    var toLogin = null;
+    var profileButton = null;
+    var logoutButton = null;
+    var toLobby = null;
+    var errorMessage = <input type="text" name="error" id="error" value = {this.state.msg} readOnly/>;
+
+    // To swap between views based on state.
+    if (this.state.view == 'login') {
+      currentView = <Login username={this.state.username} hashpass={this.state.hashpass} onUserChange={this.onUserChange} onPassChange={this.onPassChange}/>;
+      loginButton = <LoginButton onClick={this.loginClick} />;
+      toRegister = <ToRegister onClick={this.toRegisterClick} />;
+    }
+    else if (this.state.view == 'register') {
+      currentView = <Register username={this.state.username} hashpass={this.state.hashpass} onUserChange={this.onUserChange} onPassChange={this.onPassChange}/>;
+      registerButton = <RegisterButton onClick={this.registerClick} />;
+      toLogin = <ToLogin onClick={this.toLoginClick} />;
+    }
+    else if (this.state.view == 'profile') {
+      currentView = <Profile username={this.state.username} hashpass={this.state.hashpass} email={this.state.email} score={this.state.topscore} onPassChange={this.onPassChange} onEmailChange={this.onEmailChange}/>;
+      profileButton = <UpdateProfileButton onClick={this.profileClick} />;
+      toLobby = <ToLobby onClick={this.toLobbyClick} />;
+      logoutButton = <LogoutButton onClick={this.toLoginClick} />;
+    }
+    else if (this.state.view == 'lobby') {
+      currentView = <Lobby />;
+    }
+
+    return (
+        <div>
+          <h3>Warehouse WARS MMMOG</h3>
+          {currentView}
+          {loginButton}
+          {toRegister}
+          {registerButton}
+          {toLogin}
+          {profileButton}
+          {toLobby}
+          {logoutButton} <br/><br/>
+          {errorMessage}
+        </div>
+      );
+  }
+}
+
+function LoginButton(props) {
+  return (
+      <button onClick={props.onClick}>
+        Login
+      </button>
+    );
+}
+
+function ToRegister(props) {
+  return (
+      <button onClick={props.onClick}>
+        To Register
+      </button>
+    );
+}
+
+function RegisterButton(props) {
+  return (
+      <button onClick={props.onClick}>
+        Register
+      </button>
+    );
+}
+
+function ToLogin(props) {
+  return (
+      <button onClick={props.onClick}>
+        To Login
+      </button>
+    );
+}
+
+function UpdateProfileButton(props) {
+  return (
+      <button onClick={props.onClick}>
+        Update Profile
+      </button>
+    );
+}
+
+function LogoutButton(props) {
+  return (
+      <button onClick={props.onClick}>
+        Logout
+      </button>
+    );
+}
+
+function ToLobby(props) {
+  return (
+      <button onClick={props.onClick}>
+        Join Lobby
+      </button>
+    );
+}
+
+ReactDOM.render( <Main />, document.getElementById("Main"));
